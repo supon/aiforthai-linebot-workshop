@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import app.service as service
+from fastapi.staticfiles import StaticFiles # For Vaja9
 
 app = FastAPI(
     title="aiforthai-line-chatbot",
@@ -18,6 +19,8 @@ app.add_middleware(
 )
 app.include_router(service.router)
 
+# Serve static files at the /static endpoint
+app.mount("/static/", StaticFiles(directory="static"), name="static")
 
 @app.get("/")
 def index():
