@@ -65,6 +65,7 @@ async def hello_word(request: Request):
 
 @handler.add(MessageEvent, message=AudioMessage)
 def handle_voice_message(event):
+    # #13. SPEECH TO TEXT (Partii)
     # Get the audio file from LINE
     message_content = line_bot_api.get_message_content(event.message.id)
     
