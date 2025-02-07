@@ -164,7 +164,7 @@ def handle_text_message(event):
     # #12. Vaja TTS (ก่อนเรียกใช้ Vaja ให้ปิดข้อ 11. และเปิดข้อ 13.ให้เรียบร้อยก่อน)
     # #12.1 Vaja9 case เรียกใช้ผ่าน PIP package (ไม่สามารถกำหนดเสียงได้ จะได้เสียงเป็นผู้ชาย)
     
-    # tts.tts(event.message.text, DIR_FILE+WAV_FILE)
+    #tts.conver(event.message.text, DIR_FILE+WAV_FILE, speaker=0) #[0=เสียงผู้ชาย, 1=เสียงผู้หญิง, 2=เด็กผู้ชาย, 3=เด็กผู้หญิง]
     # audio_url = URL+DIR_FILE+WAV_FILE
     # audio_duration = get_wav_duration_in_ms(DIR_FILE+WAV_FILE)
 
