@@ -36,11 +36,15 @@ import requests
 # For Vaja9
 import wave
 
+from app.configs import Configs
+
 router = APIRouter(tags=[""])
 
-AIFORTHAI_APIKEY = ""  # AIForThai API key
-LINE_CHANNEL_ACCESS_TOKEN = "" #LINE Channel Access Token from developers page (https://developers.line.biz/en/)
-LINE_CHANNEL_SECRET = "" # Channel Secret from developers page (https://developers.line.biz/en/)
+cfg = Configs()
+
+setting.set_api_key(cfg.AIFORTHAI_APIKEY)  # AIForThai API key
+LINE_CHANNEL_ACCESS_TOKEN = LineBotApi(cfg.LINE_CHANNEL_ACCESS_TOKEN) #LINE Channel Access Token from developers page (https://developers.line.biz/en/)
+LINE_CHANNEL_SECRET = WebhookHandler(cfg.LINE_CHANNEL_SECRET) # Channel Secret from developers page (https://developers.line.biz/en/)
 
 URL = "" # URL ต้องมีเครื่องหมาย "/" ปิดท้ายด้วย ตัวอย่าง เช่น https://xszqqc8g-8000.asse.devtunnels.ms/
 WAV_FILE = "file.wav"
