@@ -37,24 +37,21 @@ import requests
 import wave
 
 from app.configs import Configs
+from dotenv import load_dotenv
+import os
 
 router = APIRouter(tags=[""])
 
 cfg = Configs()
 
-setting.set_api_key(cfg.AIFORTHAI_APIKEY)  
+URL = cfg.URL 
+WAV_FILE = cfg.WAV_FILE
+DIR_FILE = cfg.DIR_FILE
 
-AIFORTHAI_APIKEY = cfg.AIFORTHAI_APIKEY # AIForThai API key
-LINE_CHANNEL_ACCESS_TOKEN = cfg.LINE_CHANNEL_ACCESS_TOKEN #LINE Channel Access Token from developers page (https://developers.line.biz/en/)
-LINE_CHANNEL_SECRET = cfg.LINE_CHANNEL_SECRET # Channel Secret from developers page (https://developers.line.biz/en/)
 
-URL = "" # URL ต้องมีเครื่องหมาย "/" ปิดท้ายด้วย ตัวอย่าง เช่น https://xszqqc8g-8000.asse.devtunnels.ms/
-WAV_FILE = "file.wav"
-DIR_FILE = "static/"
-
-setting.set_api_key(AIFORTHAI_APIKEY)
-line_bot_api = LineBotApi(LINE_CHANNEL_ACCESS_TOKEN)  # CHANNEL_ACCESS_TOKEN
-handler = WebhookHandler(LINE_CHANNEL_SECRET)  # CHANNEL_SECRET
+setting.set_api_key(cfg.AIFORTHAI_APIKEY)
+line_bot_api = LineBotApi(cfg.LINE_CHANNEL_ACCESS_TOKEN)  # CHANNEL_ACCESS_TOKEN
+handler = WebhookHandler(cfg.LINE_CHANNEL_SECRET)  # CHANNEL_SECRET
 
 
 @router.post("/message")
@@ -90,7 +87,7 @@ def handle_text_message(event):
 
     # #1. Tokeninzer
     #TLex+, Lexto+
-    # text = tokenizer.tokenize(event.message.text, engine='trexplus', return_json=True) # TLex+
+    text = tokenizer.tokenize(event.message.text, engine='trexplus', return_json=True) # TLex+
     # text = tokenizer.tokenize(event.message.text, engine='lexto', return_json=True) # Lexto+
 
     # #TLex++
@@ -247,9 +244,9 @@ def get_wav_duration_in_ms(file_path):
 
 # Function call Vaja9
 def callVaja9(text, speaker):
-    url = 'https://api.aiforthai.in.th/vaja9/synth_audiovisual'
+    url = cfg.URL_VAJA
 
-    headers = {'Apikey':AIFORTHAI_APIKEY,"Content-Type": "application/json"}
+    headers = {'Apikey':cfg.AIFORTHAI_APIKEY,"Content-Type": "application/json"}
     data = {'input_text':text,'speaker': speaker}
     response = requests.post(url, json=data, headers=headers)
     return response
@@ -258,7 +255,7 @@ def callVaja9(text, speaker):
 def download_and_play(sWav_url):
     file_name = DIR_FILE+WAV_FILE
     with open(file_name, 'wb') as a:
-        resp = requests.get(sWav_url,headers={'Apikey':AIFORTHAI_APIKEY})
+        resp = requests.get(sWav_url,headers={'Apikey':cfg.AIFORTHAI_APIKEY})
         # print(resp.status_code)
         if resp.status_code == 200:
             a.write(resp.content)
@@ -277,12 +274,12 @@ def get_wav_duration_in_ms(file_path):
 
 # Function for call Partii
 def callPartii(file):
-    url = "https://api.aiforthai.in.th/partii-webapi"
+    url = cfg.URL_PARTII
 
     files = {'wavfile': (file, open(file, 'rb'), 'audio/wav')}
 
     headers = {
-            'Apikey': AIFORTHAI_APIKEY,
+            'Apikey': cfg.AIFORTHAI_APIKEY,
             'Cache-Control': 'no-cache',
             'Connection': 'keep-alive',
             }
