@@ -11,6 +11,6 @@ class Configs(BaseSettings):
     URL_PARTII: str
 
     class Config:
-        env_file = ".env"  # Ensure it reads from .env file
+        env_file = ".env"  
 
  
