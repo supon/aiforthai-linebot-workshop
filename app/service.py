@@ -87,7 +87,7 @@ def handle_text_message(event):
 
     # #1. Tokeninzer
     #TLex+, Lexto+
-    text = tokenizer.tokenize(event.message.text, engine='trexplus', return_json=True) # TLex+
+    # text = tokenizer.tokenize(event.message.text, engine='trexplus', return_json=True) # TLex+
     # text = tokenizer.tokenize(event.message.text, engine='lexto', return_json=True) # Lexto+
 
     # #TLex++
