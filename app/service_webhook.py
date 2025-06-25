@@ -61,10 +61,16 @@ async def webhook_handler(request: Request):
             if isinstance(event, MessageEvent):
                 if isinstance(event.message, TextMessage):
                     await route_message_event(event)
-                elif isinstance(event.message, AudioMessage):
-                    await service_nlp.handle_event(event)
-                elif isinstance(event.message, ImageMessage):
-                    await service_image.handle_event(event)
+                elif isinstance(event.message, AudioMessage): # AudioMessage Input
+                    await service_nlp.handle_event(event)   # NLP service
+                elif isinstance(event.message, ImageMessage): # ImageMessage Input
+                    user_id = getattr(event.source, "user_id", None)
+                    state = get_user_state(user_id) if user_id else None
+
+                    if state and (state.startswith("image_") or state == "image_mode"):
+                        await service_image.handle_event(event)
+                    else:
+                        await service_main.handle_event(event)
         except Exception as e:
             print("⚠️ Error handling event:", e)
 
