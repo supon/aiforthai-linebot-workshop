@@ -1,64 +1,45 @@
+from linebot import LineBotApi
 from fastapi import APIRouter, Request
-
-from linebot import LineBotApi, WebhookHandler
-from linebot.exceptions import InvalidSignatureError
-from linebot.models import MessageEvent, TextMessage, TextSendMessage
-
-from aift import setting
-from aift.multimodal import textqa
-
+from linebot.models import TextSendMessage, MessageEvent, TextMessage
 from datetime import datetime
 
 from app.configs import Configs
+from aift import setting
+from aift.multimodal import textqa
+
+cfg = Configs()
+setting.set_api_key(cfg.AIFORTHAI_APIKEY)
+line_bot_api = LineBotApi(cfg.LINE_CHANNEL_ACCESS_TOKEN)
 
 router = APIRouter(tags=["Main"], prefix="/message")
 
-cfg = Configs()
+# ✅ ฟังก์ชันหลักที่ถูกเรียกจาก service_webhook.py
+async def handle_event(event: MessageEvent):
+    if isinstance(event.message, TextMessage):
+        user_text = event.message.text.strip()
 
-setting.set_api_key(cfg.AIFORTHAI_APIKEY) # AIFORTHAI_APIKEY
-line_bot_api = LineBotApi(cfg.LINE_CHANNEL_ACCESS_TOKEN)  # CHANNEL_ACCESS_TOKEN
-handler = WebhookHandler(cfg.LINE_CHANNEL_SECRET)  # CHANNEL_SECRET
+        # สร้าง session_id จากวันเวลา (เช่น 17061520)
+        now = datetime.now()
+        session_id = f"{now.day:02}{now.month:02}{now.hour:02}{(now.minute // 10) * 10:02}"
 
+        try:
+            result = textqa.chat(
+                user_text,
+                session_id + cfg.AIFORTHAI_APIKEY,
+                temperature=0.6,
+                context=""
+            )
+            reply = result["response"]
+        except Exception as e:
+            reply = f"⚠️ ขออภัย, ระบบตอบกลับล้มเหลว: {str(e)}"
 
-@router.post("")
-async def message_qa(request: Request):
-    signature = request.headers["X-Line-Signature"]
-    body = await request.body()
-    try:
-        handler.handle(body.decode("UTF-8"), signature)
-    except InvalidSignatureError:
-        print(
-            "Invalid signature. Please check your channel access token or channel secret."
-        )
-    return "OK"
+        send_message(event, reply)
+    else:
+        send_message(event, "❗️ไม่รองรับประเภทข้อความนี้ครับ")
 
-
-@handler.add(MessageEvent, message=TextMessage)
-def handle_text_message(event):
-    # session id
-    current_time = datetime.now()
-    # extract day, month, hour, and minute
-    day, month = current_time.day, current_time.month
-    hour, minute = current_time.hour, current_time.minute
-    # adjust the minute to the nearest lower number divisible by 10
-    adjusted_minute = minute - (minute % 10)
-    result = f"{day:02}{month:02}{hour:02}{adjusted_minute:02}"
-
-    # aiforthai multimodal chat
-    text = textqa.chat(
-        event.message.text, result + cfg.AIFORTHAI_APIKEY, temperature=0.6, context=""
-    )["response"]
-
-    # return text response
-    send_message(event, text)
-
-
-def echo(event):
+# ✅ ฟังก์ชันส่งข้อความตอบกลับ
+def send_message(event, message: str):
     line_bot_api.reply_message(
-        event.reply_token, TextSendMessage(text=event.message.text)
+        event.reply_token,
+        TextSendMessage(text=message)
     )
-
-
-# function for sending message
-def send_message(event, message):
-    line_bot_api.reply_message(event.reply_token, TextSendMessage(text=message))
