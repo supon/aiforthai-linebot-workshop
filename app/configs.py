@@ -13,4 +13,7 @@ class Configs(BaseSettings):
     URL_PARTII: str
     URL_VAJA: str
 
+    URL_MAEWMONG: str
+    IMG_RESULT: str
+
     model_config = SettingsConfigDict(env_file=".env", extra="ignore",str_strip_whitespace=True)
