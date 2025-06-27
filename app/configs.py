@@ -13,7 +13,9 @@ class Configs(BaseSettings):
     URL_PARTII: str
     URL_VAJA: str
 
+    # Image VARIABLES
     URL_MAEWMONG: str
     IMG_RESULT: str
+    URL_PERSON_DETEC: str
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore",str_strip_whitespace=True)
