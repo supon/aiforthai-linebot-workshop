@@ -3,13 +3,12 @@ from fastapi.responses import JSONResponse
 
 from linebot import WebhookParser
 from linebot.exceptions import InvalidSignatureError
-from linebot.models import MessageEvent, TextMessage, AudioMessage, ImageMessage
+from linebot.models import MessageEvent, TextMessage, AudioMessage, ImageMessage, FileMessage
 
 from app.configs import Configs
 from app import service_nlp, service_main, service_image
 from app.user_state_store import get_user_state, has_user_state, clear_user_state
 
-from linebot.models import FileMessage
 from app.file_utils import extract_text_from_file_message
 
 
