@@ -9,6 +9,10 @@ from app.configs import Configs
 from app import service_nlp, service_main, service_image
 from app.user_state_store import get_user_state, has_user_state, clear_user_state
 
+from linebot.models import FileMessage
+from app.file_utils import extract_text_from_file_message
+
+
 router = APIRouter(tags=["Webhook"])
 cfg = Configs()
 
@@ -71,6 +75,17 @@ async def webhook_handler(request: Request):
                         await service_image.handle_event(event)
                     else:
                         await service_main.handle_event(event)
+                elif isinstance(event.message, FileMessage): #Input file
+                    try:
+                        text_content = extract_text_from_file_message(event.message, event.message.id)
+                        
+                        # ✅ เรียกฟังก์ชันใหม่ที่เราสร้างไว้
+                        await service_main.handle_text_from_file(event, text_content)
+
+                    except Exception as e:
+                        print("⚠️ Failed to process file:", e)
+                        await service_main.send_message(event, "❌ ไม่สามารถประมวลผลไฟล์นี้ได้")
+
         except Exception as e:
             print("⚠️ Error handling event:", e)
 
