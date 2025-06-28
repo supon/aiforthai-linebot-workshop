@@ -17,5 +17,6 @@ class Configs(BaseSettings):
     URL_MAEWMONG: str
     IMG_RESULT: str
     URL_PERSON_DETEC: str
+    URL_CAPGEN: str
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore",str_strip_whitespace=True)
