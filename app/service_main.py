@@ -11,7 +11,6 @@ from aift.multimodal import audioqa, textqa, vqa
 from fastapi import APIRouter, Request
 from linebot import LineBotApi
 from linebot.models import AudioMessage, ImageMessage, MessageEvent, TextMessage, TextSendMessage, ImageSendMessage
-
 from app.configs import Configs
 
 router = APIRouter(tags=["Main"], prefix="/message")
@@ -154,9 +153,31 @@ def send_image(event, image_url):
         ImageSendMessage(original_content_url=image_url, preview_image_url=image_url)
     )
 
-# ฟังก์ชันส่งรูปภาพไปที่แมวมอง
-from linebot.models import TextSendMessage, ImageSendMessage
 
+# ✅ ฟังก์ชันใหม่: รองรับข้อความจากไฟล์ เช่น docx, pdf, txt
+async def handle_text_from_file(event, text_content: str):
+    try:
+        current_time = datetime.now()
+        session_id = f"{current_time.day:02}{current_time.month:02}{current_time.hour:02}{(current_time.minute // 10) * 10:02}"
+        
+        # ใช้ LLM chat จากข้อความที่แปลงจากไฟล์
+        res = textqa.chat(text_content, session_id + cfg.AIFORTHAI_APIKEY, temperature=0.6)
+
+        # เลือกข้อความตอบกลับ
+        if res and "content" in res:
+            reply = res["content"] if isinstance(res["content"], str) else res["content"][0]
+        elif res and "response" in res:
+            reply = res["response"] if isinstance(res["response"], str) else res["response"][0]
+        else:
+            reply = "ไม่สามารถประมวลผลเนื้อหาจากไฟล์ได้"
+
+    except Exception as e:
+        reply = f"❌ เกิดข้อผิดพลาดในการประมวลผลไฟล์: {e}"
+
+    send_message(event, reply)
+
+
+# ฟังก์ชันส่งรูปภาพไปที่แมวมอง
 def call_maewmong_api(event, image_path, apikey):
     try:
         # แปลงภาพเป็น base64
