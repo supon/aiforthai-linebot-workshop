@@ -27,7 +27,9 @@ IMAGE_COMMANDS = {
     '2': 'chest_classification',
     '3': 'violence_classification',
     '4': 'nsfw',
-    '5': 'super_resolution'
+    '5': 'super_resolution',
+    '6': 'person detection',
+    '7': 'caption generation'
 }
 
 # ✅ Main event handler
@@ -51,7 +53,9 @@ async def handle_text(event):
             "2. Chest X-Ray\n"
             "3. Violence Detection\n"
             "4. NSFW Detection\n"
-            "5. Super Resolution"
+            "5. Super Resolution\n"
+            "6. Person Detection\n"
+            "7. Caption Generation"
         ))
         return
 
@@ -101,6 +105,12 @@ async def handle_image(event):
         elif service_code == '5':
             result = super_resolution.analyze(image_path)
             send_image(event, convert_http_to_https(result['url']))
+        elif service_code == '6':
+            result = person_detection(image_path)
+            send_image(event, convert_http_to_https(result))
+        elif service_code == '7':
+            result = capgen(image_path)
+            send_message(event, str(result))
         else:
             send_message(event, "⚠️ ไม่พบบริการที่เลือก")
     except Exception as e:
@@ -125,3 +135,32 @@ def convert_http_to_https(url):
     if url.startswith("http://"):
         return url.replace("http://", "https://", 1)
     return url
+
+#### function for person detection api for aiforthai ####
+def person_detection(image_dir):
+    url = cfg.URL_PERSON_DETEC
+    files = {"src_img": open(image_dir, "rb")}  ### input image dir here ###
+    data = {"json_export": "true", "img_export": "true"}
+    headers = {"Apikey": cfg.AIFORTHAI_APIKEY}
+
+    response = requests.post(url, files=files, headers=headers, data=data)
+    response = response.json()["human_img"]
+    response = convert_http_to_https(response)
+    return response
+
+### function for Image Caption
+def capgen(img_path):
+    url =cfg.URL_CAPGEN
+ 
+    headers = {'Apikey':cfg.AIFORTHAI_APIKEY}
+    
+    payload = {}
+    files=[
+    ('file',(img_path,open(img_path,'rb'),'image/jpeg'))
+    ]
+    
+    response = requests.request("POST", url, headers=headers, data=payload, files=files)
+    
+    # print(response.json())
+    return(response.json()["caption"] )
+
